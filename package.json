@@ -1,0 +1,16 @@
+{
+  "name": "banco-digital-simulado",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de banco digital simulado",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "setup": "npm run install:frontend && npm run install:backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
