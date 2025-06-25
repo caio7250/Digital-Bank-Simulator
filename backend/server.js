@@ -127,6 +127,8 @@ app.post('/api/transacao', async (req, res) => {
       if (saldoAtual < valorTransacao) throw new Error('Saldo insuficiente');
       const destinatario = await db.get('SELECT id, saldo FROM usuarios WHERE email = ?', [emailDestino]);
       if (!destinatario) throw new Error('Destinatário não encontrado');
+      if (destinatario.id === usuarioId) throw new Error('Destinário deve ser diferente do remetente');
+
       usuarioDestinoId = destinatario.id;
       const saldoDestinatario = parseFloat(destinatario.saldo);
       await db.run('UPDATE usuarios SET saldo = ? WHERE id = ?', [saldoDestinatario + valorTransacao, usuarioDestinoId]);
