@@ -69,6 +69,39 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.post('/api/usuario', async (req, res) => {
+  const db = await dbPromise;
+  try {
+    const { nome, email, senha } = req.body;
+    if (!nome || !email || !senha) {
+      return res.status(400).json({ error: 'Nome, email e senha são obrigatórios.' });
+    }
+
+    const usuarioExistente = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (usuarioExistente) {
+      return res.status(409).json({ error: 'Email já cadastrado.' });
+    }
+
+    const hashSenha = await bcrypt.hash(senha, 10);
+
+    const result = await db.run(
+      'INSERT INTO usuarios (nome, email, senha, saldo) VALUES (?, ?, ?, ?)',
+      [nome, email, hashSenha, 0]
+    );
+
+    res.status(201).json({ 
+      id: result.lastID, 
+      nome, 
+      email, 
+      saldo: 0,
+      mensagem: 'Usuário criado com sucesso!'
+    });
+  } catch (error) {
+    console.error('Erro ao criar usuário:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 app.get('/api/usuario/:id', async (req, res) => {
   const db = await dbPromise;
   try {
