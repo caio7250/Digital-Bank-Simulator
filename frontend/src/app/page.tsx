@@ -11,9 +11,11 @@ import { useState } from "react";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [nome, setNome] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cadastro, setCadastro] = useState(false);
   const router = useRouter();
 
   const togglePasswordVisibility = () => {
@@ -40,6 +42,29 @@ export default function Login() {
     }
   };
 
+  const handleCadastro = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await axios.post("http://localhost:3001/api/usuario", {
+        nome,
+        email,
+        senha,
+      });
+      setCadastro(false);
+      setNome("");
+      setEmail("");
+      setSenha("");
+      setError("Cadastro realizado com sucesso! Faça login.");
+    } catch (error: any) {
+      setError(error.response?.data?.error || "Erro ao cadastrar");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1fr_2fr]">
       <div className="hidden flex-col items-center justify-center bg-gray-100 p-10 lg:flex">
@@ -54,15 +79,38 @@ export default function Login() {
       <div className="flex items-center justify-center p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
           <div className="space-y-2 text-left">
-            <h1 className="text-primary text-3xl font-bold">Bem vindo</h1>
+            <h1 className="text-primary text-3xl font-bold">
+              {cadastro ? "Criar conta" : "Bem vindo"}
+            </h1>
             <p className="text-muted-foreground">
-              Acesse sua conta e gerencie suas finanças de forma simples e
-              segura.
+              {cadastro
+                ? "Crie sua conta e comece a gerenciar suas finanças."
+                : "Acesse sua conta e gerencie suas finanças de forma simples e segura."}
             </p>
           </div>
 
           <div className="grid gap-6">
-            <form onSubmit={handleLogin} className="grid gap-4">
+            <form
+              onSubmit={cadastro ? handleCadastro : handleLogin}
+              className="grid gap-4"
+            >
+              {cadastro && (
+                <div className="grid gap-2">
+                  <label htmlFor="nome" className="font-medium">
+                    Nome
+                  </label>
+                  <Input
+                    id="nome"
+                    type="text"
+                    value={nome}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setNome(e.target.value)
+                    }
+                    required
+                  />
+                </div>
+              )}
+
               <div className="grid gap-2">
                 <label htmlFor="email" className="font-medium">
                   Email
@@ -77,6 +125,7 @@ export default function Login() {
                   required
                 />
               </div>
+
               <div className="grid gap-2">
                 <label htmlFor="password" className="font-medium">
                   Senha
@@ -117,20 +166,40 @@ export default function Login() {
                 variant="default"
                 disabled={loading}
               >
-                {loading ? "Entrando..." : "Entrar"}
+                {loading
+                  ? cadastro
+                    ? "Cadastrando..."
+                    : "Entrando..."
+                  : cadastro
+                    ? "Cadastrar"
+                    : "Entrar"}
               </Button>
             </form>
 
-            <div className="bg-muted mt-6 rounded-lg p-4">
-              <p className="text-muted-foreground mb-2 text-center text-sm font-medium">
-                Usuários de teste:
-              </p>
-              <div className="text-muted-foreground space-y-1 text-xs">
-                <p>• joao@email.com - senha: password</p>
-                <p>• maria@email.com - senha: password</p>
-                <p>• pedro@email.com - senha: password</p>
-              </div>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setCadastro(!cadastro)}
+                className="text-primary text-sm hover:underline"
+              >
+                {cadastro
+                  ? "Já tem uma conta? Faça login"
+                  : "Não tem uma conta? Cadastre-se"}
+              </button>
             </div>
+
+            {!cadastro && (
+              <div className="bg-muted mt-6 rounded-lg p-4">
+                <p className="text-muted-foreground mb-2 text-center text-sm font-medium">
+                  Usuários de teste:
+                </p>
+                <div className="text-muted-foreground space-y-1 text-xs">
+                  <p>• joao@email.com - senha: password</p>
+                  <p>• maria@email.com - senha: password</p>
+                  <p>• pedro@email.com - senha: password</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
